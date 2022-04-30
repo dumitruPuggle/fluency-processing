@@ -1,4 +1,3 @@
-#Import init_credentials
 import os.path
 import firebase_admin
 from firebase_admin import credentials
