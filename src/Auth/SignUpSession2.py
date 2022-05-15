@@ -15,9 +15,6 @@ class SignUpSession2(Resource):
         phone_number = json_data['phoneNumber']
         lang = json_data['lang']
 
-        random_code = randrange(100000, 999999)
-        message = phoneVerificationFormatter(random_code, lang)
-
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')
 
@@ -39,32 +36,35 @@ class SignUpSession2(Resource):
             }, 403
         else:
             # send the message to the user
+            random_code = randrange(100000, 999999)
+            message = phoneVerificationFormatter(random_code, lang)
+
             send_verification_code(phone_number, message)
+            
+            # get .env variables
+            jwt_key = os.environ.get("SMS_JWT_KEY")
+            code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
 
-        # get .env variables
-        jwt_key = os.environ.get("SMS_JWT_KEY")
-        code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
+            try:
+                # to generate a code that only we can access and decrypt later
+                print(random_code)
+                encrypted_code = cryptocode.encrypt(str(random_code), code_encryption_key)
+                # expire in 5 minutes
+                expiration_time = time() + 300
 
-        try:
-            # to generate a code that only we can access and decrypt later
-            encrypted_code = cryptocode.encrypt(str(random_code), code_encryption_key)
-
-            # expire in 5 minutes
-            expiration_time = time() + 300
-
-            token = jwt.encode(
-                {
-                    **session1_credentials,
-                    "code": encrypted_code,
-                    "exp": expiration_time
-                },
-                jwt_key,
-                algorithm='HS256'
-            )
-        except Exception:
-            return {
-                "message": "Error generating new token",
-                "field": "token"
-            }, 403
+                token = jwt.encode(
+                    {
+                        **session1_credentials,
+                        "code": encrypted_code,
+                        "exp": expiration_time
+                    },
+                    jwt_key,
+                    algorithm='HS256'
+                )
+            except Exception:
+                return {
+                    "message": "Error generating new token",
+                    "field": "token"
+                }, 403
 
         return {"message": f"Success! An message code was sent to {phone_number}", "token": token}, 200

@@ -13,7 +13,8 @@ def only_unique_users(function):
             pass
         else:
             return {
-                "message": "User already exists"
+                "message": "User already exists",
+                "field": "email"
             }, 403
         return _
     return wrapper

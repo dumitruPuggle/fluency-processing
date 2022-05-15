@@ -20,9 +20,13 @@ class SignUpSession3(Resource):
         # get token from header
         temp_token = request.headers.get('_temptoken')
 
+        if temp_token == None:
+            return {
+                "message": "Invalid token"
+            }, 403
+
         try:
             decoded_token = jwt.decode(temp_token, jwt_key, algorithms=['HS256'])
-            real_code = cryptocode.decrypt(decoded_token['code'], code_encryption_key)
         except jwt.exceptions.InvalidSignatureError:
             return {
                 "message": "Invalid token",
@@ -36,11 +40,14 @@ class SignUpSession3(Resource):
         except Exception:
             return {"message": "Internal server error"}, 500
         else:
-            # if all the above is successful, check if the code is correct
-            if real_code != input_code:
-                return {
-                    "message": "Invalid code"
-                }, 400
+            try:
+                real_code = cryptocode.decrypt(decoded_token['code'], code_encryption_key)
+                if real_code != input_code:
+                    return {
+                        "message": "Invalid code"
+                    }, 400
+            except Exception:
+                return {"message": "Internal server error"}, 500
 
         return {
             "message": "Success. Your account was verified.",
