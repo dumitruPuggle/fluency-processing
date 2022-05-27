@@ -6,3 +6,5 @@ python-dotenv==0.20.0
 firebase-admin==5.2.0
 twilio
 cryptocode
+password-validator
+python-i18n

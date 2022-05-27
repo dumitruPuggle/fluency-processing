@@ -4,8 +4,11 @@ import jwt
 import cryptocode
 from time import time
 
+# from src.Auth.Decorators.use_temp_token import use_temp_token
+
 
 class SignUpSession3(Resource):
+    # @use_temp_token
     def post(self):
         # get JSON body content from request
         json_data = request.get_json()
@@ -19,11 +22,6 @@ class SignUpSession3(Resource):
 
         # get token from header
         temp_token = request.headers.get('_temptoken')
-
-        if temp_token == None:
-            return {
-                "message": "Invalid token"
-            }, 403
 
         try:
             decoded_token = jwt.decode(temp_token, jwt_key, algorithms=['HS256'])

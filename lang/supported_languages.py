@@ -1,0 +1,1 @@
+languages = ['ro', 'ro-MD', 'en-US', 'ru-MD', 'ru', 'en-GB', 'en']

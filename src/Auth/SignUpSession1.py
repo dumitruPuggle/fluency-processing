@@ -4,8 +4,10 @@ import jwt
 from email_validator import validate_email, EmailNotValidError
 from time import time
 from src.Auth.Decorators.only_unique_users import only_unique_users
+from src.Auth.Decorators.only_supported_languages import only_supported_languages
 
 class SignUpSession1(Resource):
+    @only_supported_languages
     @only_unique_users
     def post(self):
         # get JSON body content from request

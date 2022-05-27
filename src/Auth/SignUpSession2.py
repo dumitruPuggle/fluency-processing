@@ -2,18 +2,33 @@ import os
 from random import randrange
 from flask_restful import Resource, request
 import jwt
+from src.Auth.Decorators.only_supported_languages import only_supported_languages
 from lang.phone_verification_formatter import phoneVerificationFormatter
 import cryptocode
 from time import time
 from src.Auth.Tools.send_verification_code import send_verification_code 
+from firebase_admin import auth
+
+
+
+from src.Auth.Decorators.use_temp_token import use_temp_token
 
 class SignUpSession2(Resource):
+    # @use_temp_token
+    @only_supported_languages
     def post(self):
         # get JSON body content from request
         json_data = request.get_json()
 
         phone_number = json_data['phoneNumber']
         lang = json_data['lang']
+
+        try:
+            auth.get_user_by_phone_number(phone_number)
+        except auth.UserNotFoundError:
+            pass
+        else:
+            return {'message': t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
 
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')
