@@ -2,9 +2,6 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import i18n
-
-
 # Import init_credentials
 from credentials.init_credentials import *
 
@@ -27,9 +24,6 @@ api.add_resource(SignUpSession1, '/api/signup/1')
 api.add_resource(SignUpSession2, '/api/signup/2')
 api.add_resource(SignUpSession3, '/api/signup/3')
 api.add_resource(SignUpSession4, '/api/signup/4')
-
-i18n.set('file_format', 'json')
-i18n.load_path.append('lang/en.json')
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

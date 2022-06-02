@@ -2,23 +2,26 @@ import os
 from random import randrange
 from flask_restful import Resource, request
 import jwt
-from src.Auth.Decorators.only_supported_languages import only_supported_languages
 from lang.phone_verification_formatter import phoneVerificationFormatter
 import cryptocode
 from time import time
 from src.Auth.Tools.send_verification_code import send_verification_code 
 from firebase_admin import auth
-
-
+import requests
 
 from src.Auth.Decorators.use_temp_token import use_temp_token
 
+from lang.translate import Translate
+
 class SignUpSession2(Resource):
     # @use_temp_token
-    @only_supported_languages
     def post(self):
         # get JSON body content from request
         json_data = request.get_json()
+
+        # get the language from the request
+        language = request.get_json()['lang']
+        translate = Translate(language)
 
         phone_number = json_data['phoneNumber']
         lang = json_data['lang']
@@ -28,7 +31,34 @@ class SignUpSession2(Resource):
         except auth.UserNotFoundError:
             pass
         else:
-            return {'message': t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
+            return {'message': translate.t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
+
+        # check if the phone number is valid
+        url = f"https://api.apilayer.com/number_verification/validate?number={phone_number}"
+
+        payload = {}
+        headers= {
+            "apikey": os.environ.get('NUMVERIFY_API_KEY')
+        }
+
+        # response = requests.request("GET", url, headers=headers, data = payload)
+
+        # status_code = response.status_code
+        # result = response.text
+        # print(status_code, response)
+        r = requests.get(url, headers=headers, data = payload)
+        result = r.json()
+        
+        print(result)
+        is_valid = r.status_code == 200 and result['valid']
+
+        def return_invalid():
+            return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
+
+        if is_valid:
+            return return_invalid()
+        if len(phone_number) < 7:
+            return return_invalid()
 
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')

@@ -56,21 +56,14 @@ class SignUpSession4(Resource):
             }, 400
 
         # create user
-        try:
-            auth.create_user(
-                email=payload['email'],
-                email_verified=False,
-                phone_number=payload['phoneNumber'],
-                password=password,
-                photo_url="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8dmlld3xlbnwwfHwwfHw%3D&w=1000",
-                display_name=payload['firstName'] + " " + payload['lastName'],
-                disabled=False)
-        except auth.UserCreationError:
-            return {
-                "message": "Error creating user",
-                "field": "user"
-            }, 403
-        except Exception:
-            return {"message": "Internal server error"}, 500
-        
+        auth.create_user(
+            email=payload['email'],
+            email_verified=False,
+            phone_number=payload['phoneNumber'],
+            password=password,
+            photo_url="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8dmlld3xlbnwwfHwwfHw%3D&w=1000",
+            display_name=payload['firstName'] + " " + payload['lastName'],
+            disabled=False)
+
+
         return {"message": "User has been successfully created"}, 200
