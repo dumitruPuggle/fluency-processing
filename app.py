@@ -28,4 +28,4 @@ api.add_resource(SignUpSession3, '/api/signup/3')
 api.add_resource(SignUpSession4, '/api/signup/4')
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host=os.environ.get('HOST'), port=5000, debug=True)
