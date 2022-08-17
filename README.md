@@ -1,2 +1,4 @@
 # fluency-py
-THIS REPOSITORY BELONGS TO FLUENCY.MD AND ITS RESPECTIVE OWNERS. 
+Development - Dumitru Cucu
+
+Ianus Ghilețchii
