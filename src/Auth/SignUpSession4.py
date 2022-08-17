@@ -1,8 +1,8 @@
 import os
 from flask_restful import Resource, request
 import jwt
-from firebase_admin import auth
 from password_validator import PasswordValidator
+from src.Auth.Creator import Creator
 
 from src.Auth.Decorators.use_temp_token import use_temp_token
 
@@ -55,15 +55,18 @@ class SignUpSession4(Resource):
                 "field": "password"
             }, 400
 
-        # create user
-        auth.create_user(
-            email=payload['email'],
-            email_verified=False,
-            phone_number=payload['phoneNumber'],
-            password=password,
-            photo_url="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8dmlld3xlbnwwfHwwfHw%3D&w=1000",
-            display_name=payload['firstName'] + " " + payload['lastName'],
-            disabled=False)
+        # insert creator into firestore
+        creator = Creator(
+            firstName=payload['firstName'], 
+            lastName=payload['lastName'], 
+            email=payload['email'], 
+            phoneNumber=payload['phoneNumber']
+        )
 
+        creator.create_user(password)
+        creator.insert_user_firestore()
 
-        return {"message": "User has been successfully created"}, 200
+        # create a new token
+        new_token = creator.create_token()
+
+        return {"message": "User has been successfully created", "token": new_token}, 200

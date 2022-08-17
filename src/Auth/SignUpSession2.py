@@ -7,11 +7,9 @@ import cryptocode
 from time import time
 from src.Auth.Tools.send_verification_code import send_verification_code 
 from firebase_admin import auth
-import requests
-
-from src.Auth.Decorators.use_temp_token import use_temp_token
 
 from lang.translate import Translate
+
 
 class SignUpSession2(Resource):
     # @use_temp_token
@@ -20,11 +18,10 @@ class SignUpSession2(Resource):
         json_data = request.get_json()
 
         # get the language from the request
-        language = request.get_json()['lang']
-        translate = Translate(language)
+        lang = json_data.get('lang')
+        translate = Translate(lang)
 
-        phone_number = json_data['phoneNumber']
-        lang = json_data['lang']
+        phone_number = json_data.get('phoneNumber')
 
         try:
             auth.get_user_by_phone_number(phone_number)
@@ -34,37 +31,17 @@ class SignUpSession2(Resource):
             return {'message': translate.t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
 
         # check if the phone number is valid
-        url = f"https://api.apilayer.com/number_verification/validate?number={phone_number}"
-
-        payload = {}
-        headers= {
-            "apikey": os.environ.get('NUMVERIFY_API_KEY')
-        }
-
-        # response = requests.request("GET", url, headers=headers, data = payload)
-
-        # status_code = response.status_code
-        # result = response.text
-        # print(status_code, response)
-        r = requests.get(url, headers=headers, data = payload)
-        result = r.json()
-        
-        print(result)
-        is_valid = r.status_code == 200 and result['valid']
-
         def return_invalid():
             return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
 
-        if is_valid:
-            return return_invalid()
-        if len(phone_number) < 7:
+        if len(phone_number[4:]) != 9:
             return return_invalid()
 
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')
 
         try:
-            # to get get the previous information from the last session using the token
+            # get the previous information from the last session using the token
             session1_credentials = {
                 "payload": {
                     **jwt.decode(bearer, os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload'],

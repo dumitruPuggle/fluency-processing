@@ -5,6 +5,7 @@ from email_validator import validate_email, EmailNotValidError
 from time import time
 from src.Auth.Decorators.only_unique_users import only_unique_users
 
+
 class SignUpSession1(Resource):
     @only_unique_users
     def post(self):
