@@ -21,6 +21,12 @@ class SignUpSession2(Resource):
         lang = json_data.get('lang')
         translate = Translate(lang)
 
+        # try to decode the token from header
+        bearer = request.headers.get('_temptoken')
+
+        if bearer == None:
+            return {"message": "No token provided", "field": "token"}, 403
+
         phone_number = json_data.get('phoneNumber')
 
         try:
@@ -36,9 +42,6 @@ class SignUpSession2(Resource):
 
         if len(phone_number[4:]) != 9:
             return return_invalid()
-
-        # try to decode the token from header
-        bearer = request.headers.get('_temptoken')
 
         try:
             # get the previous information from the last session using the token

@@ -23,6 +23,9 @@ class SignUpSession3(Resource):
         # get token from header
         temp_token = request.headers.get('_temptoken')
 
+        if temp_token == None:
+            return {"message": "No token provided", "field": "token"}, 403
+
         try:
             decoded_token = jwt.decode(temp_token, jwt_key, algorithms=['HS256'])
         except jwt.exceptions.InvalidSignatureError:

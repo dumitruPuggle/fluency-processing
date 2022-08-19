@@ -23,7 +23,7 @@ class AuthTests(unittest.TestCase):
         name = rng.generate_one().split()[0]
         surname = rng.generate_one().split()[1]
         session1_url = f'{self.url}/api/signup/1'
-        print(session1_url)
+        
         body = {
             "firstName": name,
             "lastName": surname,
@@ -41,6 +41,35 @@ class AuthTests(unittest.TestCase):
         self.assertIsNotNone(payload.get('lastName'))
         self.assertIsNotNone(payload.get('email'))
         self.assertGreater(decoded.get('exp'), time())
+
+    def test_session_two(self):
+        session2_url = f'{self.url}/api/signup/2'
+        body = {
+            'phoneNumber': "+37360286928",
+            'lang': 'ro'
+        }
+        def response(use_header=True):
+            if use_header:
+                headers = {"_temptoken": self.first_session_token}
+            else:
+                headers = {}
+            return requests.post(session2_url, json=body, headers=headers)
+
+        # CHECK existing account
+        self.assertEqual(response().status_code, 403)
+        # check incorrect phone number
+        body = {
+            'phoneNumber': "+3736941488777",
+            'lang': 'ro'
+        }
+        self.assertEqual(response().status_code, 403)
+        # check no _temptoken parameter
+        body = {
+            'phoneNumber': "+37360286928",
+            'lang': 'ro'
+        }
+        self.assertEqual(response(use_header=False).status_code, 403)
+
 
 if __name__ == "__main__":
     unittest.main()
