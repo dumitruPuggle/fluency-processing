@@ -24,7 +24,7 @@ class SignUpSession2(Resource):
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')
 
-        if bearer == None:
+        if bearer == None or len(bearer) == 0:
             return {"message": "No token provided", "field": "token"}, 403
 
         phone_number = json_data.get('phoneNumber')

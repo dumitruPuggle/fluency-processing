@@ -86,8 +86,34 @@ class AuthTests(unittest.TestCase):
             'lang': 'ro'
         }
         normal_phone_response = requests.post(session2_url, json=body, headers=session2_headers)
-        AuthTests.second_session_token = json.loads(normal_phone_response.text).get('token')
+        token: str = json.loads(normal_phone_response.text).get('token')
+        AuthTests.second_session_token = token
         self.assertEqual(normal_phone_response.status_code, 200)
+
+    def test_session_three(self):
+        session3_url = f'{self.url}/api/signup/3'
+        session3_headers = {
+            '_temptoken': self.second_session_token,
+            'lang': 'ro'
+        }
+
+        body = {
+            'code': randrange(100000, 999999)
+        }
+
+        # check no _temptoken parameter
+        no_temptoken_response = requests.post(session3_url, json=body, headers={})
+        self.assertEqual(no_temptoken_response.status_code, 403)
+
+        # check empty _temptoken
+        empty_token_response = requests.post(session3_url, json=body, headers={
+            '_temptoken': "",
+            'lang': 'ro'
+        })
+        self.assertEqual(empty_token_response.status_code, 403)
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

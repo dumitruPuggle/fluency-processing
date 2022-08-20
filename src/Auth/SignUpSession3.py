@@ -23,7 +23,7 @@ class SignUpSession3(Resource):
         # get token from header
         temp_token = request.headers.get('_temptoken')
 
-        if temp_token == None:
+        if temp_token == None or len(temp_token) == 0:
             return {"message": "No token provided", "field": "token"}, 403
 
         try:
@@ -39,7 +39,7 @@ class SignUpSession3(Resource):
                 "field": "token"
             }, 403
         except Exception:
-            return {"message": "Internal server error"}, 500
+            return {"message": "Token decoding failed, please enter an valid token"}, 500
         else:
             try:
                 real_code = cryptocode.decrypt(decoded_token['code'], code_encryption_key)
