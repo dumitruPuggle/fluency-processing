@@ -7,6 +7,7 @@ import requests
 import random_name_generator as rng
 import jwt
 from time import time
+from random import randrange
 
 load_dotenv()
 
@@ -14,6 +15,7 @@ load_dotenv()
 class AuthTests(unittest.TestCase):
     url = f"http://{os.environ.get('HOST')}:{os.environ.get('PORT')}"
     first_session_token: str = ""
+    second_session_token: str = ""
 
     def test_http_code(self):
         response = requests.get(self.url)
@@ -23,7 +25,7 @@ class AuthTests(unittest.TestCase):
         name = rng.generate_one().split()[0]
         surname = rng.generate_one().split()[1]
         session1_url = f'{self.url}/api/signup/1'
-        
+
         body = {
             "firstName": name,
             "lastName": surname,
@@ -44,32 +46,48 @@ class AuthTests(unittest.TestCase):
 
     def test_session_two(self):
         session2_url = f'{self.url}/api/signup/2'
+        session2_headers = {"_temptoken": self.first_session_token}
+
+        # CHECK existing account
         body = {
             'phoneNumber': "+37360286928",
             'lang': 'ro'
         }
-        def response(use_header=True):
-            if use_header:
-                headers = {"_temptoken": self.first_session_token}
-            else:
-                headers = {}
-            return requests.post(session2_url, json=body, headers=headers)
+        existing_account_response = requests.post(session2_url, json=body, headers=session2_headers)
+        self.assertEqual(existing_account_response.status_code, 403)
 
-        # CHECK existing account
-        self.assertEqual(response().status_code, 403)
         # check incorrect phone number
         body = {
             'phoneNumber': "+3736941488777",
             'lang': 'ro'
         }
-        self.assertEqual(response().status_code, 403)
+        incorrect_number_response = requests.post(session2_url, json=body, headers=session2_headers)
+        self.assertEqual(incorrect_number_response.status_code, 403)
+
+        # check incorrectly formatted code
+        body = {
+            'phoneNumber': "+5105005036941488777",
+            'lang': 'ro'
+        }
+        invalid_formated_response = requests.post(session2_url, json=body, headers=session2_headers)
+        self.assertEqual(invalid_formated_response.status_code, 403)
+
         # check no _temptoken parameter
         body = {
             'phoneNumber': "+37360286928",
             'lang': 'ro'
         }
-        self.assertEqual(response(use_header=False).status_code, 403)
+        no_temptoken_response = requests.post(session2_url, json=body, headers={})
+        self.assertEqual(no_temptoken_response.status_code, 403)
 
+        # normal phone number
+        body = {
+            'phoneNumber': f"+3736028{randrange(4013, 9999)}",
+            'lang': 'ro'
+        }
+        normal_phone_response = requests.post(session2_url, json=body, headers=session2_headers)
+        AuthTests.second_session_token = json.loads(normal_phone_response.text).get('token')
+        self.assertEqual(normal_phone_response.status_code, 200)
 
 if __name__ == "__main__":
     unittest.main()

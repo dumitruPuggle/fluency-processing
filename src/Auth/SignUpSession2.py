@@ -40,7 +40,7 @@ class SignUpSession2(Resource):
         def return_invalid():
             return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
 
-        if len(phone_number[4:]) != 9:
+        if len(phone_number[4:]) != 8:
             return return_invalid()
 
         try:
