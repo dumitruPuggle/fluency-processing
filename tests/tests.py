@@ -14,8 +14,6 @@ load_dotenv()
 
 class AuthTests(unittest.TestCase):
     url = f"http://{os.environ.get('HOST')}:{os.environ.get('PORT')}"
-    first_session_token: str = ""
-    second_session_token: str = ""
 
     def test_http_code(self):
         response = requests.get(self.url)
@@ -33,11 +31,15 @@ class AuthTests(unittest.TestCase):
         }
         response = requests.post(url=session1_url, json=body, headers={"lang": "ro"})
         token: str = json.loads(response.text).get('token')
-        AuthTests.first_session_token = token
+        with open('debug_auth_test.json', 'w') as f:
+            f.write(json.dumps({'session_one': token}))
         self.assertEqual(response.status_code, 200)
 
     def test_session_one_token(self):
-        decoded = jwt.decode(self.first_session_token, options={"verify_signature": False})
+        with open('debug_auth_test.json', 'r') as f:
+            first_session_token: str = json.loads(f.read()).get('session_one')
+
+        decoded = jwt.decode(first_session_token, options={"verify_signature": False})
         payload = decoded.get('payload')
         self.assertIsNotNone(payload.get('firstName'))
         self.assertIsNotNone(payload.get('lastName'))
@@ -45,8 +47,11 @@ class AuthTests(unittest.TestCase):
         self.assertGreater(decoded.get('exp'), time())
 
     def test_session_two(self):
+        with open('debug_auth_test.json', 'r') as f:
+            first_session_token = json.loads(f.read()).get('session_one')
+
         session2_url = f'{self.url}/api/signup/2'
-        session2_headers = {"_temptoken": self.first_session_token}
+        session2_headers = {"_temptoken": first_session_token}
 
         # CHECK existing account
         body = {
@@ -87,13 +92,23 @@ class AuthTests(unittest.TestCase):
         }
         normal_phone_response = requests.post(session2_url, json=body, headers=session2_headers)
         token: str = json.loads(normal_phone_response.text).get('token')
-        AuthTests.second_session_token = token
+        with open('debug_auth_test.json', 'r') as f:
+            all_dict = json.loads(f.read())
+        with open('debug_auth_test.json', 'w') as f:
+            f.write(json.dumps({
+                **all_dict,
+                "second_session": token
+            }))
         self.assertEqual(normal_phone_response.status_code, 200)
 
     def test_session_three(self):
         session3_url = f'{self.url}/api/signup/3'
+        with open('debug_auth_test.json', 'r') as f:
+            print(f.read())
+            second_session = json.loads(f.read()).get('second_session')
+
         session3_headers = {
-            '_temptoken': self.second_session_token,
+            '_temptoken': second_session,
             'lang': 'ro'
         }
 
@@ -110,6 +125,7 @@ class AuthTests(unittest.TestCase):
             '_temptoken': "",
             'lang': 'ro'
         })
+        print(second_session)
         self.assertEqual(empty_token_response.status_code, 403)
 
 
