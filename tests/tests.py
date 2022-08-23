@@ -11,6 +11,8 @@ from random import randrange
 
 load_dotenv()
 
+unittest.TestLoader.sortTestMethodsUsing = None
+
 
 class AuthTests(unittest.TestCase):
     url = f"http://{os.environ.get('HOST')}:{os.environ.get('PORT')}"
@@ -23,6 +25,8 @@ class AuthTests(unittest.TestCase):
         name = rng.generate_one().split()[0]
         surname = rng.generate_one().split()[1]
         session1_url = f'{self.url}/api/signup/1'
+
+        print('1', time())
 
         body = {
             "firstName": name,
@@ -47,6 +51,7 @@ class AuthTests(unittest.TestCase):
         self.assertGreater(decoded.get('exp'), time())
 
     def test_session_two(self):
+        print('2', time())
         with open('debug_auth_test.json', 'r') as f:
             first_session_token = json.loads(f.read()).get('session_one')
 
@@ -94,18 +99,24 @@ class AuthTests(unittest.TestCase):
         token: str = json.loads(normal_phone_response.text).get('token')
         with open('debug_auth_test.json', 'r') as f:
             all_dict = json.loads(f.read())
+            f.close()
         with open('debug_auth_test.json', 'w') as f:
-            f.write(json.dumps({
+            dict_to_write = {
                 **all_dict,
                 "second_session": token
-            }))
+            }
+            f.write(json.dumps(dict_to_write))
+            print(dict_to_write)
+            f.flush()
         self.assertEqual(normal_phone_response.status_code, 200)
 
     def test_session_three(self):
+        print('3', time())
         session3_url = f'{self.url}/api/signup/3'
         with open('debug_auth_test.json', 'r') as f:
             print(f.read())
-            second_session = json.loads(f.read()).get('second_session')
+            # second_session = json.loads(f.read()).get('second_session')
+            second_session = ""
 
         session3_headers = {
             '_temptoken': second_session,

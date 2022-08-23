@@ -3,7 +3,7 @@ from flask_restful import Resource, request
 import jwt
 from email_validator import validate_email, EmailNotValidError
 from time import time
-from src.Auth.Decorators.only_unique_users import only_unique_users
+from src.auth.decorators.only_unique_users import only_unique_users
 
 
 class SignUpSession1(Resource):

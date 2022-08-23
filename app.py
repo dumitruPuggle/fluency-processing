@@ -9,11 +9,11 @@ from flask_restful import Api
 from flask_cors import CORS
 
 #Imports for the API
-from src.Root.rootPoint import Root
-from src.Auth.SignUpSession1 import SignUpSession1
-from src.Auth.SignUpSession2 import SignUpSession2
-from src.Auth.SignUpSession3 import SignUpSession3
-from src.Auth.SignUpSession4 import SignUpSession4
+from src.root.root_point import Root
+from src.auth.signup_session_one import SignUpSession1
+from src.auth.signup_session_two import SignUpSession2
+from src.auth.signup_session_three import SignUpSession3
+from src.auth.signup_session_four import SignUpSession4
 
 load_dotenv()
 app = Flask(__name__)
