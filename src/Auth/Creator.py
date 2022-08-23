@@ -1,4 +1,4 @@
-from src.Auth.User import User
+from src.auth.user import User
 from firebase_admin import auth
 from firebase_admin import firestore
 
