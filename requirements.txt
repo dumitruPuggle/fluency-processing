@@ -7,3 +7,4 @@ firebase-admin==5.2.0
 twilio
 cryptocode
 password-validator
+pytest
