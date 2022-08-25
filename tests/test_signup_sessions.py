@@ -1,2 +1,4 @@
-def test_math():
-    assert 1 + 1 == 2
+from dotenv import load_dotenv
+
+load_dotenv()
+
