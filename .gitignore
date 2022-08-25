@@ -3,3 +3,8 @@ __pycache__
 .idea
 credentials
 .env
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+.pytest_cache
