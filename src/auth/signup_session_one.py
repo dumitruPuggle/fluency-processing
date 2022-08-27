@@ -19,6 +19,8 @@ class SignUpSession1(Resource):
             "email": json_data['email']
         }
 
+        print(session1_credentials)
+
         try:
             validate_email(session1_credentials["email"])
         except EmailNotValidError as e:
@@ -29,6 +31,7 @@ class SignUpSession1(Resource):
             }, 403
 
         key = os.environ.get("JWT_SECRET_KEY")
+        print(key)
         encoded_credentials = jwt.encode({"payload": session1_credentials, "exp": time() + 3600}, key, algorithm="HS256")
         return {
             "token": encoded_credentials,

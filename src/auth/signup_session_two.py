@@ -1,49 +1,49 @@
-import os
+import os     
 from random import randrange
 from flask_restful import Resource, request
-import jwt
+import jwt  
 from lang.phone_verification_formatter import phoneVerificationFormatter
 import cryptocode
 from time import time
 from src.auth.tools.send_verification_code import send_verification_code
 from firebase_admin import auth
-
+    
 from lang.translate import Translate
-
-
+    
+    
 class SignUpSession2(Resource):
     # @use_temp_token
     def post(self):
         # get JSON body content from request
         json_data = request.get_json()
-
+    
         # get the language from the request
         lang = json_data.get('lang')
         translate = Translate(lang)
-
+  
         # try to decode the token from header
         bearer = request.headers.get('_temptoken')
-
+  
         if bearer == None or len(bearer) == 0:
             return {"message": "No token provided", "field": "token"}, 403
-
+  
         phone_number = json_data.get('phoneNumber')
 
-        try:
+        try:  
             auth.get_user_by_phone_number(phone_number)
         except auth.UserNotFoundError:
             pass
-        else:
+        else: 
             return {'message': translate.t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
-
+  
         # check if the phone number is valid
         def return_invalid():
-            return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
-
-        if len(phone_number[4:]) != 8:
+           return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
+         
+        if len(phone_number[4:]) != 9:
             return return_invalid()
-
-        try:
+      
+        try:  
             # get the previous information from the last session using the token
             session1_credentials = {
                 "payload": {
