@@ -58,8 +58,7 @@ class SignUpSession4(Resource):
         # insert creator into firestore
         creator = Creator(
             firstName=payload['firstName'], 
-            lastName=payload['lastName'], 
-            email=payload['email'], 
+            lastName=payload['lastName'],
             phoneNumber=payload['phoneNumber']
         )
 

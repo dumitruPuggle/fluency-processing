@@ -40,7 +40,7 @@ class SignUpSession2(Resource):
         def return_invalid():
            return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
          
-        if len(phone_number[4:]) != 9:
+        if len(phone_number[4:]) > 9:
             return return_invalid()
       
         try:  
@@ -86,9 +86,9 @@ class SignUpSession2(Resource):
                     jwt_key,
                     algorithm='HS256'
                 )
-            except Exception:
+            except Exception as e:
                 return {
-                    "message": "Error generating new token",
+                    "message": e,
                     "field": "token"
                 }, 403
 
