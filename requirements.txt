@@ -4,7 +4,9 @@ pyjwt==2.3.0
 email_validator==1.1.3
 python-dotenv==0.20.0
 firebase-admin==5.2.0
-twilio
-cryptocode
+twilio~=7.8.1
+cryptocode~=0.1
 password-validator
 pytest
+requests~=2.27.1
+names~=0.3.0

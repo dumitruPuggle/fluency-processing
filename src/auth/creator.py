@@ -29,7 +29,6 @@ class Creator(User):
             self.db.collection('users').document(self.uid).set({
                 'firstName': self.firstName,
                 'lastName': self.lastName,
-                'email': self.email,
                 'role': self.role,
                 'phoneNumber': self.phoneNumber
             })
