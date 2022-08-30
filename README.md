@@ -10,3 +10,12 @@ This is the back-end service for fluency React.js client. The repository remains
 ### Development:
  - Dumitru Cucu
  - Ianus Ghilețchii
+
+# Setup:
+In order to get the repository running on your device please follow the following commands:
+
+`pip3 install -r requirements.txt`
+
+To create your env file with all the necessary requirements use:
+
+`python init_env.py`
