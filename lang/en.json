@@ -1,4 +1,5 @@
 {
     "phoneAlreadyLinked": "This phone number is already linked to an account.",
-    "invalidPhoneNumber": "Invalid phone number"
+    "invalidPhoneNumber": "Invalid phone number",
+    "errorSendingSMS": "Error sending SMS at this moment, please try again later."
 }
