@@ -59,6 +59,7 @@ class SignUpSession4(Resource):
         creator = Creator(
             firstName=payload['firstName'], 
             lastName=payload['lastName'],
+            email=payload['email'],
             phoneNumber=payload['phoneNumber']
         )
 

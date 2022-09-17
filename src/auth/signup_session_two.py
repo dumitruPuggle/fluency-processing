@@ -5,8 +5,9 @@ import jwt
 from lang.phone_verification_formatter import phoneVerificationFormatter
 import cryptocode
 from time import time
-from src.auth.tools.send_verification_code import send_verification_code
+from src.auth.tools.send_verification_code import SendVerificationSMSTwillo, SendVerificationSMSNexmo
 from firebase_admin import auth
+import json
     
 from lang.translate import Translate
     
@@ -64,7 +65,25 @@ class SignUpSession2(Resource):
             random_code = randrange(100000, 999999)
             message = phoneVerificationFormatter(random_code, lang)
 
-            send_verification_code(phone_number, message)
+            send_verification_sms = SendVerificationSMSTwillo(phone_number)
+            twillio_sms_successful, twillio_exception = send_verification_sms.send(message)
+
+            if not twillio_sms_successful and twillio_exception in ["internal", "other"]:
+                # Try other providers
+                send_verification_sms = SendVerificationSMSNexmo(phone_number)
+                nexmo_sms_successful, nexmo_exception = send_verification_sms.send(message)
+                if not nexmo_sms_successful and nexmo_exception in ["internal", "other"]:
+                    return {
+                        "message": translate.t('errorSendingSMS'),
+                        "field": 'phoneNumber'
+                    }, 500
+                elif not nexmo_sms_successful and nexmo_exception == "invalid_number":
+                    # If the nexmo works, but the phone number is incorrect
+                    return return_invalid()
+            elif not twillio_sms_successful and twillio_exception == "invalid_number":
+                # If the twillio works, but the phone number is incorrect
+                return return_invalid()
+
             
             # get .env variables
             jwt_key = os.environ.get("SMS_JWT_KEY")
