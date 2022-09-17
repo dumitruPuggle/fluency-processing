@@ -66,12 +66,12 @@ class SignUpSession2(Resource):
             message = phoneVerificationFormatter(random_code, lang)
 
             send_verification_sms = SendVerificationSMSTwillo(phone_number)
-            twillio_sms_successful, twillio_exception = send_verification_sms.send(message)
+            twillio_sms_successful, twillio_exception, twillio_raw_output = send_verification_sms.send(message)
 
             if not twillio_sms_successful and twillio_exception in ["internal", "other"]:
                 # Try other providers
                 send_verification_sms = SendVerificationSMSNexmo(phone_number)
-                nexmo_sms_successful, nexmo_exception = send_verification_sms.send(message)
+                nexmo_sms_successful, nexmo_exception, nexmo_raw_output = send_verification_sms.send(message)
                 if not nexmo_sms_successful and nexmo_exception in ["internal", "other"]:
                     return {
                         "message": translate.t('errorSendingSMS'),
