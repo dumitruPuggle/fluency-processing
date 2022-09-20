@@ -1,7 +1,7 @@
 import os
 from flask_restful import Resource, request
 import jwt
-import cryptocode
+from src.auth.encryption.encrypt import Encrypto
 from time import time
 
 # from src.Auth.Decorators.use_temp_token import use_temp_token
@@ -41,8 +41,9 @@ class SignUpSession3(Resource):
         except Exception:
             return {"message": "Token decoding failed, please enter an valid token"}, 500
         else:
+            encrypto = Encrypto()
             try:
-                real_code = cryptocode.decrypt(decoded_token['code'], code_encryption_key)
+                real_code = encrypto.decrypt(decoded_token['code'], code_encryption_key)
                 if real_code != input_code:
                     return {
                         "message": "Invalid code"

@@ -3,7 +3,7 @@ from random import randrange
 from flask_restful import Resource, request
 import jwt  
 from lang.phone_verification_formatter import phoneVerificationFormatter
-import cryptocode
+from src.auth.encryption.encrypt import Encrypto
 from time import time
 from src.auth.tools.send_verification_code import SendVerificationSMSTwillo, SendVerificationSMSNexmo
 from firebase_admin import auth
@@ -89,10 +89,13 @@ class SignUpSession2(Resource):
             jwt_key = os.environ.get("SMS_JWT_KEY")
             code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
 
+            # instantiate a crypto class instance
+            encrypto = Encrypto()
+
             try:
                 # to generate a code that only we can access and decrypt later
                 print(random_code)
-                encrypted_code = cryptocode.encrypt(str(random_code), code_encryption_key)
+                encrypted_code = encrypto.encrypt(string=str(random_code), key=code_encryption_key)
                 # expire in 5 minutes
                 expiration_time = time() + 300
 

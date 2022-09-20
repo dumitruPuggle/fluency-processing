@@ -1,4 +1,6 @@
 # Load env
+import os
+
 from dotenv import load_dotenv
 
 # Import init_credentials
@@ -15,6 +17,8 @@ from src.auth.signup_session_two import SignUpSession2
 from src.auth.signup_session_three import SignUpSession3
 from src.auth.signup_session_four import SignUpSession4
 
+from src.status.status import Status
+
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
@@ -22,10 +26,8 @@ api = Api(app)
 
 #Routes
 api.add_resource(Root, '/')
+api.add_resource(Status, '/status')
 api.add_resource(SignUpSession1, '/api/signup/1')
 api.add_resource(SignUpSession2, '/api/signup/2')
 api.add_resource(SignUpSession3, '/api/signup/3')
 api.add_resource(SignUpSession4, '/api/signup/4')
-
-if __name__ == '__main__':
-    app.run(host=os.environ.get('HOST'), port=5000, debug=True)
