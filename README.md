@@ -16,6 +16,12 @@ In order to get the repository running on your device please follow the followin
 
 `pip3 install -r requirements.txt`
 
+To initialize your project automatically, just run:
+
+
+`python init.py`
+
+
 To create your env file with all the necessary requirements use:
 
 `python init_env.py`
