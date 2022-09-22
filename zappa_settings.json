@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "profile_name": "default",
+        "project_name": "fluency-py",
+        "runtime": "python3.9",
+        "s3_bucket": "zappa-u2g9zbpc3",
+        "aws_region": "us-east-1"
+    }
+}

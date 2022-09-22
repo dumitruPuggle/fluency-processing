@@ -1,10 +1,6 @@
 # Load env
-import os
-
 from dotenv import load_dotenv
-
-# Import init_credentials
-from credentials.init_credentials import *
+from init import Init
 
 from flask import Flask
 from flask_restful import Api
@@ -18,6 +14,9 @@ from src.auth.signup_session_three import SignUpSession3
 from src.auth.signup_session_four import SignUpSession4
 
 from src.status.status import Status
+
+init = Init()
+init.init_firebase_admin()
 
 load_dotenv()
 app = Flask(__name__)
