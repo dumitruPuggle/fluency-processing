@@ -27,6 +27,11 @@ class Init:
         new_name = "fluency-py-private-key.json"
         os.rename(f'{current_location}/{selected_filename}', f'{current_location}/{new_name}')
 
+    def file_exists(self):
+        current_location = os.getcwd()
+        if os.path.isfile(f'{current_location}/{"fluency-py-private-key.json"}'):
+            return True
+
     def init_firebase_admin(self):
         cred = credentials.Certificate("./fluency-py-private-key.json")
         firebase_admin.initialize_app(cred)
@@ -63,5 +68,10 @@ class AskForFileUI:
 
 if __name__ == "__main__":
     init = Init()
-    print("please select your service key json file (firebase admin), please be sure to select a valid file, to avoid errors.")
-    init.bring_file_to_the_front()
+    file_exists = init.file_exists()
+    if file_exists:
+        print("the project has been already initialised")
+    else:
+        print(
+            "please select your service key json file (firebase admin), please be sure to select a valid file, to avoid errors.")
+        init.bring_file_to_the_front()
