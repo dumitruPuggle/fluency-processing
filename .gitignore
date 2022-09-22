@@ -1,10 +1,10 @@
 venv
 __pycache__
 .idea
-credentials
 .env
 *.pyc
 *.pyo
 *.pyd
 __pycache__
 .pytest_cache
+fluency-py-private-key.json

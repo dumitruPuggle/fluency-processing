@@ -7,7 +7,6 @@ from src.auth.encryption.encrypt import Encrypto
 from time import time
 from src.auth.tools.send_verification_code import SendVerificationSMSTwillo, SendVerificationSMSNexmo
 from firebase_admin import auth
-import json
     
 from lang.translate import Translate
     
