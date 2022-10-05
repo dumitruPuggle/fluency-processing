@@ -7,6 +7,29 @@ from src.auth.decorators.only_unique_users import only_unique_users
 
 
 class SignUpSession1(Resource):
+
+    def check_email(self, email: str):
+        try:
+            validate_email(email)
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            return False, str(e)
+        else:
+            return True, None
+
+    def encode_credentials_in_session(self, credentials: dict, expiration: int):
+        key = os.environ.get("JWT_SECRET_KEY")
+        data = {
+            "payload": credentials,
+            "exp": time() + expiration
+        }
+        try:
+            encoded = jwt.encode(data, key, algorithm="HS256")
+        except Exception as e:
+            return False, None, e
+        else:
+            return True, encoded, None
+
     @only_unique_users
     def post(self):
         # get JSON body content from request
@@ -19,20 +42,27 @@ class SignUpSession1(Resource):
             "email": json_data['email']
         }
 
-        print(session1_credentials)
+        email_valid, exception = self.check_email(
+            email=session1_credentials["email"]
+        )
 
-        try:
-            validate_email(session1_credentials["email"])
-        except EmailNotValidError as e:
-            # email is not valid, exception message is human-readable
+        if not email_valid:
             return {
-               "error": str(e),
-               "field": "email"
+                "message": exception,
+                "field": "email"
             }, 403
 
-        key = os.environ.get("JWT_SECRET_KEY")
-        print(key)
-        encoded_credentials = jwt.encode({"payload": session1_credentials, "exp": time() + 3600}, key, algorithm="HS256")
+        encoded_success, encoded_credentials, exception = self.encode_credentials_in_session(
+            credentials=session1_credentials,
+            expiration=3600
+        )
+
+        if not encoded_success:
+            return {
+                "message": "Internal server error",
+                "field": None
+            }, 500
+
         return {
             "token": encoded_credentials,
             "message": "Please bring this token with you to the next session. Don't share it with anyone."
