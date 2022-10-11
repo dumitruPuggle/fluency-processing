@@ -1,6 +1,7 @@
-import os     
+import os
+from src.auth.auth_instance import AuthInstance
 from random import randrange
-from flask_restful import Resource, request
+from flask_restful import request
 import jwt  
 from lang.phone_verification_formatter import phoneVerificationFormatter
 from src.auth.encryption.encrypt import Encrypto
@@ -11,43 +12,74 @@ from firebase_admin import auth
 from lang.translate import Translate
     
     
-class SignUpSession2(Resource):
-    # @use_temp_token
-    def post(self):
-        # get JSON body content from request
-        json_data = request.get_json()
-    
-        # get the language from the request
-        lang = json_data.get('lang')
-        translate = Translate(lang)
-  
-        # try to decode the token from header
-        bearer = request.headers.get('_temptoken')
-  
-        if bearer == None or len(bearer) == 0:
-            return {"message": "No token provided", "field": "token"}, 403
-  
-        phone_number = json_data.get('phoneNumber')
+class SignUpSession2(AuthInstance):
 
-        try:  
+    def __init__(self):
+        self.json_data = request.get_json()
+        self.lang = self.json_data.get('lang')
+        self.translate = Translate(self.lang)
+
+    def return_invalid_phone_number(self):
+        return {'message': self.translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
+
+    def search_for_phone_number(self, phone_number):
+        try:
             auth.get_user_by_phone_number(phone_number)
         except auth.UserNotFoundError:
-            pass
-        else: 
-            return {'message': translate.t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
+            return False
+        else:
+            return True
+
+    def validate_phone_number(self, phone_number):
+        if len(phone_number[4:]) != 9:
+            return False
+        return True
+
+    def generate_sms_code(self):
+        return randrange(100000, 999999)
+
+    def send_message_sms(self, phone_number, message):
+        send_verification_sms = SendVerificationSMSTwillo(phone_number)
+        twillio_sms_successful, twillio_exception, twillio_raw_output = send_verification_sms.send(message)
+
+        if not twillio_sms_successful and twillio_exception in ["internal", "other"]:
+            # Try other providers
+            send_verification_sms = SendVerificationSMSNexmo(phone_number)
+            nexmo_sms_successful, nexmo_exception, nexmo_raw_output = send_verification_sms.send(message)
+            if not nexmo_sms_successful and nexmo_exception in ["internal", "other"]:
+                return False, "provider_error", nexmo_raw_output
+            elif not nexmo_sms_successful and nexmo_exception == "invalid_number":
+                # If the nexmo works, but the phone number is incorrect
+                return False, "invalid_number", nexmo_raw_output
+        elif not twillio_sms_successful and twillio_exception == "invalid_number":
+            # If the twillio works, but the phone number is incorrect
+            return False, "invalid_number", twillio_raw_output
+
+        return True, None, None
+
+    def post(self):
+        phone_number = self.json_data.get('phoneNumber')
+
+        # try to decode the token from header
+        self.check_header()
+
+        # check if the phone number is not linked to an account
+        is_phone_number_linked = self.search_for_phone_number(phone_number)
+
+        if is_phone_number_linked:
+            return {'message': self.translate.t('phoneAlreadyLinked'), 'field': 'phoneNumber'}, 403
   
         # check if the phone number is valid
-        def return_invalid():
-           return {'message': translate.t('invalidPhoneNumber'), 'field': 'phoneNumber'}, 403
-         
-        if len(phone_number[4:]) > 9:
-            return return_invalid()
-      
+        valid = self.validate_phone_number(phone_number)
+
+        if not valid:
+            return self.return_invalid_phone_number()
+
         try:  
             # get the previous information from the last session using the token
             session1_credentials = {
                 "payload": {
-                    **jwt.decode(bearer, os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload'],
+                    **jwt.decode(self.get_temp_token(), os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload'],
                     "phoneNumber": phone_number
                 }
             }
@@ -61,29 +93,19 @@ class SignUpSession2(Resource):
             }, 403
         else:
             # send the message to the user
-            random_code = randrange(100000, 999999)
-            message = phoneVerificationFormatter(random_code, lang)
+            code = self.generate_sms_code()
+            processed_message = phoneVerificationFormatter(code, self.lang)
 
-            send_verification_sms = SendVerificationSMSTwillo(phone_number)
-            twillio_sms_successful, twillio_exception, twillio_raw_output = send_verification_sms.send(message)
+            success, exception, raw_exception = self.send_message_sms(message=processed_message, phone_number=phone_number)
 
-            if not twillio_sms_successful and twillio_exception in ["internal", "other"]:
-                # Try other providers
-                send_verification_sms = SendVerificationSMSNexmo(phone_number)
-                nexmo_sms_successful, nexmo_exception, nexmo_raw_output = send_verification_sms.send(message)
-                if not nexmo_sms_successful and nexmo_exception in ["internal", "other"]:
-                    return {
-                        "message": translate.t('errorSendingSMS'),
-                        "field": 'phoneNumber'
-                    }, 500
-                elif not nexmo_sms_successful and nexmo_exception == "invalid_number":
-                    # If the nexmo works, but the phone number is incorrect
-                    return return_invalid()
-            elif not twillio_sms_successful and twillio_exception == "invalid_number":
-                # If the twillio works, but the phone number is incorrect
-                return return_invalid()
+            if not success and exception == "provider_error":
+                return {
+                   "message": self.translate.t('errorSendingSMS'),
+                   "field": 'phoneNumber'
+               }, 500
+            elif not success and exception == "invalid_number":
+                return self.return_invalid_phone_number()
 
-            
             # get .env variables
             jwt_key = os.environ.get("SMS_JWT_KEY")
             code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
@@ -93,8 +115,8 @@ class SignUpSession2(Resource):
 
             try:
                 # to generate a code that only we can access and decrypt later
-                print(random_code)
-                encrypted_code = encrypto.encrypt(string=str(random_code), key=code_encryption_key)
+                print(code)
+                encrypted_code = encrypto.encrypt(string=str(code), key=code_encryption_key)
                 # expire in 5 minutes
                 expiration_time = time() + 300
 

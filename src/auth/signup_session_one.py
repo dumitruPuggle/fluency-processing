@@ -52,6 +52,12 @@ class SignUpSession1(Resource):
                 "field": "email"
             }, 403
 
+        # Hint: The mechanism of authentication is quite simple
+        # instead of storing this state progress on server,
+        # we just return a jwt token with all user's data.
+
+        # The process below appends the user credentials to a jwt token:
+
         encoded_success, encoded_credentials, exception = self.encode_credentials_in_session(
             credentials=session1_credentials,
             expiration=3600
