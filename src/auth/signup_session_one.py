@@ -1,12 +1,17 @@
 import os
-from flask_restful import Resource, request
 import jwt
 from email_validator import validate_email, EmailNotValidError
 from time import time
-from src.auth.decorators.only_unique_users import only_unique_users
+from firebase_admin import auth
+from src.auth.auth_instance import AuthInstance
 
 
-class SignUpSession1(Resource):
+class SignUpSession1(AuthInstance):
+    schema = {
+        'firstName': "String",
+        'lastName': "String",
+        'email': "String"
+    }
 
     def check_email(self, email: str):
         try:
@@ -30,10 +35,32 @@ class SignUpSession1(Resource):
         else:
             return True, encoded, None
 
-    @only_unique_users
+    def is_user_unique_by_email(self, email: str):
+        try:
+            email = email
+            auth.get_user_by_email(email)
+        except auth.UserNotFoundError:
+            return True
+        else:
+            return False
+
     def post(self):
         # get JSON body content from request
-        json_data = request.get_json()
+        json_data = self.get_req_body
+
+        # validate req body
+        valid_req_body = self.validate_req_body(self.schema, json_data)
+
+        if not valid_req_body:
+            return self.get_invalid_schema_request_message()
+
+        is_user_unique = self.is_user_unique_by_email(email=json_data['email'])
+
+        if not is_user_unique:
+            return {
+                "message": "User already exists",
+                "field": "email"
+            }, 403
 
         # first session
         session1_credentials = {
@@ -65,11 +92,11 @@ class SignUpSession1(Resource):
 
         if not encoded_success:
             return {
-                "message": "Internal server error",
-                "field": None
-            }, 500
+                       "message": "Internal server error",
+                       "field": None
+                   }, 500
 
         return {
-            "token": encoded_credentials,
-            "message": "Please bring this token with you to the next session. Don't share it with anyone."
-        }, 200
+                   "token": encoded_credentials,
+                   "message": "Please bring this token with you to the next session. Don't share it with anyone."
+               }, 200

@@ -3,26 +3,32 @@ from flask_restful import Resource, request
 import jwt
 from password_validator import PasswordValidator
 from src.auth.creator import Creator
+from src.auth.auth_instance import AuthInstance
 
 # from src.auth.decorators.use_temp_token import use_temp_token
 
 
-class SignUpSession4(Resource):
-    # @use_temp_token
+class SignUpSession4(AuthInstance):
+    schema = {
+        'password': "String"
+    }
     def post(self):
         # get JSON body content from request
-        json_data = request.get_json()
-
-        password = json_data['password']
+        json_data = self.get_req_body
 
         # get .env variables
         jwt_key = os.environ.get("SMS_JWT_KEY")
 
-        # get token from header
-        temp_token = request.headers.get('_temptoken')
+        # validate req body
+        valid_req_body = self.validate_req_body(self.schema, json_data)
+
+        if not valid_req_body:
+            return self.get_invalid_schema_request_message()
+
+        password = json_data['password']
 
         try:
-            payload = jwt.decode(temp_token, jwt_key, algorithms=['HS256'])['payload']
+            payload = jwt.decode(self.get_temp_token, jwt_key, algorithms=['HS256'])['payload']
         except jwt.exceptions.InvalidSignatureError:
             return {
                 "message": "Invalid token",

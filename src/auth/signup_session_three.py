@@ -1,17 +1,27 @@
+import json
 import os
-from flask_restful import Resource, request
 import jwt
+
+from src.auth.auth_instance import AuthInstance
 from src.auth.encryption.encrypt import Encrypto
 from time import time
 
 # from src.Auth.Decorators.use_temp_token import use_temp_token
 
 
-class SignUpSession3(Resource):
-    # @use_temp_token
+class SignUpSession3(AuthInstance):
+    schema = {
+        'code': 'String'
+    }
     def post(self):
         # get JSON body content from request
-        json_data = request.get_json()
+        json_data = self.get_req_body
+
+        # validate req body
+        valid_req_body = self.validate_req_body(self.schema, json_data)
+
+        if not valid_req_body:
+            return self.get_invalid_schema_request_message()
 
         # code provided by user
         input_code = json_data["code"]
@@ -21,10 +31,13 @@ class SignUpSession3(Resource):
         code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
 
         # get token from header
-        temp_token = request.headers.get('_temptoken')
+        temp_token = self.get_temp_token
 
-        if temp_token == None or len(temp_token) == 0:
-            return {"message": "No token provided", "field": "token"}, 403
+        # check temptoken
+        temptoken_persists = self.check_temptoken()
+        if not temptoken_persists:
+            return self.get_no_temp_token_header_exception
+
 
         try:
             decoded_token = jwt.decode(temp_token, jwt_key, algorithms=['HS256'])

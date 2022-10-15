@@ -1,7 +1,6 @@
 import os
 from src.auth.auth_instance import AuthInstance
 from random import randrange
-from flask_restful import request
 import jwt  
 from lang.phone_verification_formatter import phoneVerificationFormatter
 from src.auth.encryption.encrypt import Encrypto
@@ -14,8 +13,13 @@ from lang.translate import Translate
     
 class SignUpSession2(AuthInstance):
 
+    schema = {
+        'lang': 'String',
+        'phoneNumber': "String"
+    }
+
     def __init__(self):
-        self.json_data = request.get_json()
+        self.json_data = self.get_req_body
         self.lang = self.json_data.get('lang')
         self.translate = Translate(self.lang)
 
@@ -60,8 +64,16 @@ class SignUpSession2(AuthInstance):
     def post(self):
         phone_number = self.json_data.get('phoneNumber')
 
-        # try to decode the token from header
-        self.check_header()
+        # check temptoken
+        temptoken_persists = self.check_temptoken()
+        if not temptoken_persists:
+            return self.get_no_temp_token_header_exception
+
+        # validate req body
+        valid_req_body = self.validate_req_body(self.schema, self.json_data)
+
+        if not valid_req_body:
+            return self.get_invalid_schema_request_message()
 
         # check if the phone number is not linked to an account
         is_phone_number_linked = self.search_for_phone_number(phone_number)
@@ -79,7 +91,7 @@ class SignUpSession2(AuthInstance):
             # get the previous information from the last session using the token
             session1_credentials = {
                 "payload": {
-                    **jwt.decode(self.get_temp_token(), os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload'],
+                    **jwt.decode(self.get_temp_token, os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload'],
                     "phoneNumber": phone_number
                 }
             }
