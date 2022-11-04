@@ -35,13 +35,16 @@ class AuthInstance(Resource):
         if empty:
             return False
 
+        if not len(compare_schema.items()) == len(compare_json_data.items()):
+            return False
+
         for key, value in compare_schema.items():
             compare_json_data[key] = str(type(value))
 
         for key, value in compare_json_data.items():
             compare_schema[key] = str(type(value))
 
-        return compare_schema == compare_json_data
+        return json.dumps(compare_schema) == json.dumps(compare_json_data)
 
     def get_invalid_schema_request_message(self):
         return {
