@@ -1,5 +1,7 @@
 {
     "phoneAlreadyLinked": "Acest num\u0103r de telefon este deja asociat cu un cont.",
     "invalidPhoneNumber": "Număr de telefon incorect",
-    "errorSendingSMS": "Eroare la trimiterea SMS-ului în acest moment, vă rugăm să încercați din nou mai târziu."
+    "errorSendingSMS": "Eroare la trimiterea SMS-ului în acest moment, vă rugăm să încercați din nou mai târziu.",
+    "emailAlreadyLinked": "Această adresă de e-mail este deja legată de un cont.",
+    "invalidEmailAddress": "Adresa de e-mail invalidă"
 }

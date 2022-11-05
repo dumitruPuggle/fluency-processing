@@ -1,6 +1,8 @@
 from flask_restful import Resource, request
 import json
 import copy
+import jwt
+import os
 
 class AuthInstance(Resource):
     def __init__(self):
@@ -43,11 +45,23 @@ class AuthInstance(Resource):
 
         for key, value in compare_json_data.items():
             compare_schema[key] = str(type(value))
-
-        return json.dumps(compare_schema) == json.dumps(compare_json_data)
+            
+        # return json.dumps(compare_schema) == json.dumps(compare_json_data)
+        return compare_schema == compare_json_data 
 
     def get_invalid_schema_request_message(self):
         return {
             'message': f'Your request does not meet the required standards. Please refer to the API documentation.',
             'field': 'request'
         }, 400
+    
+    def decode_previous_session(self):
+        try:
+            # get the previous information from the last session using the token
+            last_session_credentials = jwt.decode(self.get_temp_token, os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload']
+        except jwt.exceptions.InvalidSignatureError or jwt.exceptions.DecodeError:
+            return None, 'invalid_token'
+        except jwt.exceptions.ExpiredSignatureError:
+            return None, 'token_expired'
+        else:
+            return last_session_credentials, None

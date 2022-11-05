@@ -10,10 +10,12 @@ class AuthProviderPhone:
     def search_for_phone_number(self, phone_number):
         try:
             auth.get_user_by_phone_number(phone_number)
+        except ValueError:
+            return None, "invalid_phone_number"
         except auth.UserNotFoundError:
-            return False
+            return False, None
         else:
-            return True
+            return True, None
 
     def validate_phone_number(self, phone_number):
         if len(phone_number[4:]) != 9:
