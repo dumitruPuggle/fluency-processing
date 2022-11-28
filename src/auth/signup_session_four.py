@@ -6,15 +6,23 @@ from src.auth.users.user import User
 from src.auth.auth_instance import AuthInstance
 from src.constant.constants_vars import user_types_generic, PHONE_PROVIDER
 from firebase_admin import _auth_utils
+from lang.translate import Translate
 
 
 class SignUpSession4(AuthInstance):
     schema = {
         'password': "String"
     }
+    
+    def __init__(self):        
+        self.json_data = self.get_req_body
+        self.lang = self.json_data.get('lang', 'ru')
+        self.translate = Translate(self.lang)
+    
     def post(self):
         # get JSON body content from request
         json_data = self.get_req_body
+        
 
         # get .env variables
         jwt_key = os.environ.get("SMS_JWT_KEY")

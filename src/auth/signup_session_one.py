@@ -122,8 +122,11 @@ class SignUpSession1(AuthInstance):
             **raw_session_credentials
         }
         
-        if user_uid is not None:
-            session1_credentials['verify_account_uid'] = user_uid
+        try:
+            if user_uid is not None:
+                session1_credentials['verify_account_uid'] = user_uid
+        except Exception as e:
+            print(e)
         
         encoded_success, encoded_credentials, exception = self.encode_credentials_in_session(
             credentials=session1_credentials,
