@@ -5,7 +5,6 @@ from firebase_admin import credentials
 
 import shutil
 
-
 class Init:
     def __init__(self):
         pass

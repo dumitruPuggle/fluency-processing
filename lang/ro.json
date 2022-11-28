@@ -3,5 +3,7 @@
     "invalidPhoneNumber": "Număr de telefon incorect",
     "errorSendingSMS": "Eroare la trimiterea SMS-ului în acest moment, vă rugăm să încercați din nou mai târziu.",
     "emailAlreadyLinked": "Această adresă de e-mail este deja legată de un cont.",
-    "invalidEmailAddress": "Adresa de e-mail invalidă"
+    "invalidEmailAddress": "Adresa de e-mail invalidă",
+    "confirmation_code_description_1": "Am emis un cod pentru a continua crearea contului dumneavoastră, vă rugăm să nu îl împărtășiți cu nimeni!",
+    "passwordIsNotValid": "Parola dumneavoastră nu îndeplinește cerințele necesare."
 }

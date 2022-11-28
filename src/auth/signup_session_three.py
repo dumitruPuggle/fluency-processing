@@ -57,7 +57,7 @@ class SignUpSession3(AuthInstance):
             encrypto = Encrypto()
             try:
                 real_code = encrypto.decrypt(decoded_token['code'], code_encryption_key)
-                if real_code != input_code:
+                if str(real_code) != str(input_code):
                     return {
                         "message": "Invalid code"
                     }, 400
@@ -68,9 +68,11 @@ class SignUpSession3(AuthInstance):
             "message": "Success. Your account was verified.",
             "token": jwt.encode(
                 {
-                    "payload": decoded_token['payload'],
+                    "payload": {
+                        **decoded_token['payload'],
+                        "verified": True
+                    },
                     "exp": time() + 3600,
-                    "verified": True
                 },
                 jwt_key,
                 algorithm='HS256'

@@ -8,7 +8,7 @@ from lang.translate import Translate
 from src.auth.auth_provider_phone import AuthProviderPhone
 from src.auth.auth_provider_email import AuthProviderEmail
 from src.constant.constants_vars import PHONE_PROVIDER, EMAIL_PROVIDER, DEFAULT_PROVIDER
-
+from src.email_html.verification_code import VerificationCodeHTMLTemplate
 
 class SignUpSession2(AuthInstance):
     phone_schema = {
@@ -35,16 +35,22 @@ class SignUpSession2(AuthInstance):
         return {'message': self.translate.t('invalidEmailAddress'), 'field': 'email'}, 403
 
     def post(self):
+        # get .env variables required for this operation
+        jwt_key = os.environ.get("SMS_JWT_KEY")
+        code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
+        
+        verification_provider = self.json_data.get('provider', DEFAULT_PROVIDER)
+        
+        # check if verification provider element is type string.
+        if type(verification_provider) != type('String'):
+            return self.get_invalid_schema_request_message()
+        
         # check temptoken
         temptoken_persists = self.check_temptoken()
         if not temptoken_persists:
             return self.get_no_temp_token_header_exception
             
         previous_session_credentials, previous_session_decode_exception = self.decode_previous_session()
-        
-        print(previous_session_decode_exception)
-
-        verification_provider = self.json_data.get('provider', DEFAULT_PROVIDER)
 
         if verification_provider == PHONE_PROVIDER:
             # validate req body for conditional phone provider
@@ -80,10 +86,6 @@ class SignUpSession2(AuthInstance):
                 elif not success and exception == "invalid_number":
                     return self.return_invalid_phone_number()
     
-                # get .env variables
-                jwt_key = os.environ.get("SMS_JWT_KEY")
-                code_encryption_key = os.environ.get("SMS_CODE_ENCRYPTION_KEY")
-    
                 # instantiate a crypto class instance
                 encrypto = Encrypto()
     
@@ -97,7 +99,8 @@ class SignUpSession2(AuthInstance):
                     new_credentials = {
                         "payload": {
                             **previous_session_credentials,
-                            "phoneNumber": phone_number
+                            "phoneNumber": phone_number,
+                            "provider": PHONE_PROVIDER
                         }
                     }
     
@@ -112,7 +115,7 @@ class SignUpSession2(AuthInstance):
                     )
                 except Exception as e:
                     return {
-                        "message": e,
+                        "message": "Sorry an unexpected error occurred, try again later",
                         "field": "token"
                     }, 403
                 else:
@@ -137,18 +140,19 @@ class SignUpSession2(AuthInstance):
             email_provider = AuthProviderEmail(email=email_address)
             
             # check if email is not linked to any existing accounts
+            verify_existing_account = previous_session_credentials.get('verify_existing_account', False)
             is_email_linked, email_exception = email_provider.is_linked_to_an_account(email=email_address)
             
             if email_exception == "invalid_email":
                 return self.return_invalid_email_address()
             
-            if is_email_linked:
+            if verify_existing_account is False and is_email_linked:
                 return {
                     'message': self.translate.t('emailAlreadyLinked'),
                     'field': 'email'
                 }, 403
-            
-            if previous_session_credentials != None:
+
+            if previous_session_credentials is not None:
                 # send code to email address
                 email_code = email_provider.generate_code()
                 sent_successfully, send_code_exception = email_provider.send_code(to=email_address, code=email_code)
@@ -156,41 +160,43 @@ class SignUpSession2(AuthInstance):
                 print(email_code)
                 
                 if sent_successfully:
+                    # prepare JWT Token
                     encrypto = Encrypto()
                     try:
                         # to generate a code that only we can access and decrypt later
                         encrypted_code = encrypto.encrypt(string=str(email_code), key=code_encryption_key)
                         # expire in 5 minutes
-                        expiration_time = time() + 300
+                        expiration_time = time() + 10
                     
                         new_credentials = {
                             "payload": {
-                                **previous_session_credentials
+                                **previous_session_credentials,
+                                "provider": EMAIL_PROVIDER
                             }
                         }
                     
                         token = jwt.encode(
                             {
                                 **new_credentials,
-                                "code": encrypted_code,
+                                "code": email_code,
                                 "exp": expiration_time
                             },
                             jwt_key,
                             algorithm='HS256'
                         )
                     except Exception as e:
+                        print(e)
                         return {
-                            "message": e,
+                            "message": "Sorry an unexpected error occurred, try again later",
                             "field": "token"
                         }, 403
                     else:
-                        return {"message": f"Success! ", "token": token}, 200
+                        return {"message": f"Success! An message code was sent to {email_address}", "token": token}, 200
                 elif send_code_exception == "error_send":
                     return {
                         "message": "Sorry, error sending email at this time, try again later.",
                         "field": "email"
                     }
-                
             elif previous_session_decode_exception == "token_expired":
                 return {
                     "message": "Token expired"
@@ -199,9 +205,6 @@ class SignUpSession2(AuthInstance):
                 return {
                     "message": "Invalid token"
                 }, 403
-
-            return {"message": f"Success! An message code was sent to {email_address}", "token": "To be implemented"}, 200
-
         else:
             return {
                 "message": "You have specified an incorrect verification provider, please refer to the documentation", "field": "request"

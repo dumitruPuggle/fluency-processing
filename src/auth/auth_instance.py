@@ -11,6 +11,10 @@ class AuthInstance(Resource):
     @property
     def get_temp_token(self):
         return request.headers.get('_temptoken')
+        
+    @property
+    def get_header(self, id: str):
+        return request.headers.get(id)
 
     @property
     def get_no_temp_token_header_exception(self):
@@ -41,10 +45,10 @@ class AuthInstance(Resource):
             return False
 
         for key, value in compare_schema.items():
-            compare_json_data[key] = str(type(value))
+            compare_schema[key] = str(type(value))
 
         for key, value in compare_json_data.items():
-            compare_schema[key] = str(type(value))
+            compare_json_data[key] = str(type(value))
             
         # return json.dumps(compare_schema) == json.dumps(compare_json_data)
         return compare_schema == compare_json_data 

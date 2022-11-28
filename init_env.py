@@ -24,5 +24,9 @@ with open('.env', 'w') as env_credentials:
    writer.add_env_credential("NEXMO_FROM", input('Enter Nexmo From Message Title: '))
    writer.add_env_credential("NEXMO_KEY", input('Enter Nexmo Key: '))
    writer.add_env_credential("NEXMO_SECRET", input('Enter Nexmo Secret: '))
+   writer.add_env_credential("EMAIL_SENDER_ADDRESS", input('Enter Email Sender Address: '))
+   writer.add_env_credential("EMAIL_SENDER_NAME", input('Enter Email Sender Name: '))
+   writer.add_env_credential("COMPUTE_ACCOUNT_VERIFICATION", input('Enter the account verification key: '))
+   writer.add_env_credential("SERVER_ID", input('Enter Server ID: '))
 
 print("Your .env file is Ready")
