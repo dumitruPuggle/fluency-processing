@@ -16,7 +16,7 @@ class SignUpSession4(AuthInstance):
     
     def __init__(self):        
         self.json_data = self.get_req_body
-        self.lang = self.json_data.get('lang', 'ru')
+        self.lang = self.get_lang_from_previous_session
         self.translate = Translate(self.lang)
     
     def post(self):
@@ -39,16 +39,16 @@ class SignUpSession4(AuthInstance):
             payload = jwt.decode(self.get_temp_token, jwt_key, algorithms=['HS256'])['payload']
         except jwt.exceptions.InvalidSignatureError:
             return {
-                "message": "Invalid token",
+                "message": self.translate.t('invalid_token'),
                 "field": "token"
             }, 403
         except jwt.exceptions.ExpiredSignatureError:
             return {
-                "message": "Token expired",
+                "message": self.translate.t('token_expired'),
                 "field": "token"
             }, 403
         except Exception:
-            return {"message": "Internal server error"}, 500
+            return {"message": self.translate.t('internal_server_error')}, 500
 
 
         # validate the password
@@ -87,7 +87,7 @@ class SignUpSession4(AuthInstance):
         except Exception as e:
             print(e)
             return {
-                "message": f"An unknown error has occurred",
+                "message": self.translate.t('internal_server_error'),
                 "field": "request"
             }, 400
         else:
@@ -96,13 +96,13 @@ class SignUpSession4(AuthInstance):
                     auth_instance.create_user(password)
                 except _auth_utils.EmailAlreadyExistsError:
                     return {
-                        "message": f"This user has been already created (ILLEGAL OPERATION)",
+                        "message": self.translate.t('this_user_has_been_already_created'),
                         "field": "request"
                     }, 400
                 except Exception as e:
                     print(e)
                     return {
-                        "message": f"An unknown error has occurred",
+                        "message": self.translate.t('internal_server_error'),
                         "field": "request"
                     }, 400
             elif payload.get('verify_existing_account', False) is True:
@@ -113,14 +113,14 @@ class SignUpSession4(AuthInstance):
                     )
                 except _auth_utils.EmailAlreadyExistsError:
                     return {
-                        "message": f"This user has been already created (ILLEGAL OPERATION)",
+                        "message": self.translate.t('this_user_has_been_already_created'),
                         "field": "request"
                     }, 400
                 except Exception as e:
                     print(e)
                     return {
-                        "message": f"An unknown error has occurred",
+                        "message": self.translate.t('internal_server_error'),
                         "field": "request"
                     }, 400
                     
-            return {"message": "User has been successfully created, please sign-in using Client SDK!"}, 200
+            return {"message": self.translate.t('success_user_has_been_created_sign_in_with_sdk')}, 200

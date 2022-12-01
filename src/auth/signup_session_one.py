@@ -6,16 +6,24 @@ from firebase_admin import auth
 from src.auth.auth_instance import AuthInstance
 from src.constant.constants_vars import user_types, user_types_generic
 from src.auth.users.user import User
+from src.constant.constants_vars import DEFAULT_LANGUAGE
+from lang.translate import Translate
 
 
 class SignUpSession1(AuthInstance):
     schema = {
+        'lang': 'String',
         'userType': 'String',
         'verifyExistingAccount': False,
         'firstName': 'String',
         'lastName': 'String',
         'email': 'String'
     }
+    
+    def __init__(self):
+        self.json_data = self.get_req_body
+        self.lang = self.json_data.get('lang', DEFAULT_LANGUAGE)
+        self.translate = Translate(self.lang)
 
     def check_email(self, email: str):
         try:
@@ -49,53 +57,51 @@ class SignUpSession1(AuthInstance):
             return False
 
     def post(self):
-        # get JSON body content from request
-        json_data = self.get_req_body
-
         # validate req body
-        valid_req_body = self.validate_req_body(self.schema, json_data)
+        valid_req_body = self.validate_req_body(self.schema, self.json_data)
 
         if not valid_req_body:
             return self.get_invalid_schema_request_message()
         
-        verify_existing_account = json_data.get('verifyExistingAccount', False)
-        is_user_unique = self.is_user_unique_by_email(email=json_data['email'])
+        verify_existing_account = self.json_data.get('verifyExistingAccount', False)
+        is_user_unique = self.is_user_unique_by_email(email=self.json_data['email'])
 
         if verify_existing_account is True:
             # validate is the account is existing
             if is_user_unique:
                 return {
-                    "message": "This account does not exist",
+                    "message": self.translate.t('account_does_not_exist'),
                     "field": "email"
                 }, 403
             # validate if the account is indeed not verified
-            is_user_valid = User.validate(json_data.get('email'))
+            is_user_valid = User.validate(self.json_data.get('email'))
             if is_user_valid:
                 return {
-                    "message": "This user has been already verified",
+                    "message": f"{self.translate.t('account_already_verified')} (204)",
                     "field": "email"
                 }, 403
             if not is_user_valid:
-                user_uid = auth.get_user_by_email(json_data.get('email')).uid
+                user_uid = auth.get_user_by_email(self.json_data.get('email')).uid
         elif verify_existing_account is False:
             if not is_user_unique:
                 return {
-                    "message": "User already exists",
+                    "message": self.translate.t("account_already_exists"),
                     "field": "email"
                 }, 403
 
         # first session
         raw_session_credentials = {
-            "user_type": json_data['userType'],
-            "verify_existing_account": json_data['verifyExistingAccount'],
-            "firstName": json_data['firstName'],
-            "lastName": json_data['lastName'],
-            "email": json_data['email']
+            "lang": self.json_data['lang'],
+            "user_type": self.json_data['userType'],
+            "verify_existing_account": self.json_data['verifyExistingAccount'],
+            "firstName": self.json_data['firstName'],
+            "lastName": self.json_data['lastName'],
+            "email": self.json_data['email']
         }
         
         if raw_session_credentials.get('user_type') not in user_types:
             return {
-                'message': f'Your userType does not meet the required standards. Please refer to the API documentation.',
+                'message': self.translate.t('your_user_type_does_not_meet_requirements'),
                 'field': 'request'
             }, 400
         else:
@@ -135,11 +141,11 @@ class SignUpSession1(AuthInstance):
 
         if not encoded_success:
             return {
-               "message": "Internal server error",
+               "message": self.translate.t('internal_server_error'),
                "field": None
             }, 500
 
         return {
             "token": encoded_credentials,
-            "message": "Please bring this token with you to the next session. Don't share it with anyone."
+            "message": self.translate.t('success_please_bring_this_token_with_you')
         }, 200

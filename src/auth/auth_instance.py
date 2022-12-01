@@ -3,6 +3,7 @@ import json
 import copy
 import jwt
 import os
+from src.constant.constants_vars import DEFAULT_LANGUAGE
 
 class AuthInstance(Resource):
     def __init__(self):
@@ -60,6 +61,7 @@ class AuthInstance(Resource):
         }, 400
     
     def decode_previous_session(self):
+        print(self.get_temp_token)
         try:
             # get the previous information from the last session using the token
             last_session_credentials = jwt.decode(self.get_temp_token, os.environ.get('JWT_SECRET_KEY'), algorithms=['HS256'])['payload']
@@ -69,3 +71,13 @@ class AuthInstance(Resource):
             return None, 'token_expired'
         else:
             return last_session_credentials, None
+    
+    @property    
+    def get_lang_from_previous_session(self):
+        previous_session_payload, exception = self.decode_previous_session()
+        try:
+            lang = previous_session_payload.get('lang', DEFAULT_LANGUAGE)
+        except Exception:
+            return DEFAULT_LANGUAGE
+        else:
+            return lang

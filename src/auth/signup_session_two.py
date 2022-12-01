@@ -12,20 +12,18 @@ from src.email_html.verification_code import VerificationCodeHTMLTemplate
 
 class SignUpSession2(AuthInstance):
     phone_schema = {
-        'lang': 'String',
         'phoneNumber': "String",
         'provider': 'String'
     }
 
     email_schema = {
-        'lang': 'String',
         'email': 'String',
         'provider': 'String'
     }
 
     def __init__(self):
         self.json_data = self.get_req_body
-        self.lang = self.json_data.get('lang')
+        self.lang = self.get_lang_from_previous_session
         self.translate = Translate(self.lang)
 
     def return_invalid_phone_number(self):
@@ -115,18 +113,18 @@ class SignUpSession2(AuthInstance):
                     )
                 except Exception as e:
                     return {
-                        "message": "Sorry an unexpected error occurred, try again later",
+                        "message": self.translate.t('internal_server_error'),
                         "field": "token"
                     }, 403
                 else:
-                    return {"message": f"Success! An message code was sent to {phone_number}", "token": token}, 200
+                    return {"message": f"{self.translate.t('success_an_message_code_has_been_sent_to')} {phone_number}", "token": token}, 200
             elif previous_session_decode_exception == "token_expired":
                 return {
-                    "message": "Token expired"
+                    "message": self.translate.t('token_expired')
                 }, 403
             elif previous_session_decode_exception == "invalid_token":
                 return {
-                    "message": "Invalid token"
+                    "message": self.translate.t('invalid_token')
                 }, 403
 
         elif verification_provider == EMAIL_PROVIDER:
@@ -155,7 +153,7 @@ class SignUpSession2(AuthInstance):
             if previous_session_credentials is not None:
                 # send code to email address
                 email_code = email_provider.generate_code()
-                sent_successfully, send_code_exception = email_provider.send_code(to=email_address, code=email_code)
+                sent_successfully, send_code_exception = email_provider.send_code(to=email_address, code=email_code, lang=self.lang)
                 
                 print(email_code)
                 
@@ -187,27 +185,27 @@ class SignUpSession2(AuthInstance):
                     except Exception as e:
                         print(e)
                         return {
-                            "message": "Sorry an unexpected error occurred, try again later",
+                            "message": self.translate.t("internal_server_error"),
                             "field": "token"
                         }, 403
                     else:
-                        return {"message": f"Success! An message code was sent to {email_address}", "token": token}, 200
+                        return {"message": f"{self.translate.t('success_an_message_code_has_been_sent_to')} {email_address}", "token": token}, 200
                 elif send_code_exception == "error_send":
                     return {
-                        "message": "Sorry, error sending email at this time, try again later.",
+                        "message": self.translate.t('error_sending_message_code_at_this_time'),
                         "field": "email"
                     }
             elif previous_session_decode_exception == "token_expired":
                 return {
-                    "message": "Token expired"
+                    "message": self.translate.t('token_expired')
                 }, 403
             elif previous_session_decode_exception == "invalid_token":
                 return {
-                    "message": "Invalid token"
+                    "message": self.translate.t('invalid_token')
                 }, 403
         else:
             return {
-                "message": "You have specified an incorrect verification provider, please refer to the documentation", "field": "request"
+                "message": self.translate.t('you_have_chosen_an_incorrect_auth_provider'), "field": "request"
             }, 400
             
         return {

@@ -18,3 +18,5 @@ user_types_generic = [
   "agency",
   "influencer",
 ]
+
+DEFAULT_LANGUAGE = "en"
