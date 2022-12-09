@@ -12,6 +12,7 @@ from src.auth.signup_session_one import SignUpSession1
 from src.auth.signup_session_two import SignUpSession2
 from src.auth.signup_session_three import SignUpSession3
 from src.auth.signup_session_four import SignUpSession4
+from src.auth.auth_is_user_verified import AuthIsUserVerified
 
 from src.status.status import Status
 
@@ -30,3 +31,4 @@ api.add_resource(SignUpSession1, '/api/signup/1')
 api.add_resource(SignUpSession2, '/api/signup/2')
 api.add_resource(SignUpSession3, '/api/signup/3')
 api.add_resource(SignUpSession4, '/api/signup/4')
+api.add_resource(AuthIsUserVerified, '/api/is-user-verified')

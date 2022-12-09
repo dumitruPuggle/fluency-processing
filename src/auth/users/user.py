@@ -72,7 +72,7 @@ class User:
     def validate(email: str) -> bool:
         db = firestore.client()
         uid = auth.get_user_by_email(email).uid
-        jwt_key = os.environ.get('COMPUTE_ACCOUNT_VERIFICATION')
+        jwt_key = os.environ.get('COMPUTE_ACCOUNT_VERIFICATION')        
         
         try:
             user_doc_ref = db.collection('users').document(uid)
