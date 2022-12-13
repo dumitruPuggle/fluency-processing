@@ -8,10 +8,10 @@ from flask_cors import CORS
 
 #Imports for the API
 from src.root.root_point import Root
-from src.auth.signup_session_one import SignUpSession1
-from src.auth.signup_session_two import SignUpSession2
-from src.auth.signup_session_three import SignUpSession3
-from src.auth.signup_session_four import SignUpSession4
+from src.auth.verify_session_1 import VerifyAccountSession1
+from src.auth.verify_session_2 import VerifyAccountSession2
+from src.auth.verify_session_3 import VerifyAccountSession3
+from src.auth.verify_session_4 import VerifyAccountSession4
 from src.auth.auth_is_user_verified import AuthIsUserVerified
 
 from src.status.status import Status
@@ -27,8 +27,8 @@ api = Api(app)
 #Routes
 api.add_resource(Root, '/')
 api.add_resource(Status, '/status')
-api.add_resource(SignUpSession1, '/api/signup/1')
-api.add_resource(SignUpSession2, '/api/signup/2')
-api.add_resource(SignUpSession3, '/api/signup/3')
-api.add_resource(SignUpSession4, '/api/signup/4')
+api.add_resource(VerifyAccountSession1, '/api/verify/1')
+api.add_resource(VerifyAccountSession2, '/api/verify/2')
+api.add_resource(VerifyAccountSession3, '/api/verify/3')
+api.add_resource(VerifyAccountSession4, '/api/verify/4')
 api.add_resource(AuthIsUserVerified, '/api/is-user-verified')

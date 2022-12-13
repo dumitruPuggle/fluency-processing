@@ -9,7 +9,7 @@ from firebase_admin import _auth_utils
 from lang.translate import Translate
 
 
-class SignUpSession4(AuthInstance):
+class VerifyAccountSession4(AuthInstance):
     schema = {
         'password': "String"
     }
@@ -76,7 +76,6 @@ class SignUpSession4(AuthInstance):
         MARKETER = user_types_generic[0]
         try:
             auth_instance = User(
-                user_type=payload.get('user_type'),
                 provider_type=payload.get('provider'), 
                 verified=payload.get('verified'), 
                 firstName=payload.get('firstName'), 

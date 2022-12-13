@@ -10,7 +10,7 @@ from lang.translate import Translate
 # from src.Auth.Decorators.use_temp_token import use_temp_token
 
 
-class SignUpSession3(AuthInstance):
+class VerifyAccountSession3(AuthInstance):
     schema = {
         'code': 'String'
     }

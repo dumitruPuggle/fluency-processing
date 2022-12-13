@@ -10,7 +10,7 @@ from src.auth.auth_provider_email import AuthProviderEmail
 from src.constant.constants_vars import PHONE_PROVIDER, EMAIL_PROVIDER, DEFAULT_PROVIDER
 from src.email_html.verification_code import VerificationCodeHTMLTemplate
 
-class SignUpSession2(AuthInstance):
+class VerifyAccountSession2(AuthInstance):
     phone_schema = {
         'phoneNumber': "String",
         'provider': 'String'

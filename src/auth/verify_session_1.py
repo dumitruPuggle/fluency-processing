@@ -10,10 +10,9 @@ from src.constant.constants_vars import DEFAULT_LANGUAGE
 from lang.translate import Translate
 
 
-class SignUpSession1(AuthInstance):
+class VerifyAccountSession1(AuthInstance):
     schema = {
         'lang': 'String',
-        'userType': 'String',
         'verifyExistingAccount': False,
         'firstName': 'String',
         'lastName': 'String',
@@ -92,21 +91,11 @@ class SignUpSession1(AuthInstance):
         # first session
         raw_session_credentials = {
             "lang": self.json_data['lang'],
-            "user_type": self.json_data['userType'],
             "verify_existing_account": self.json_data['verifyExistingAccount'],
             "firstName": self.json_data['firstName'],
             "lastName": self.json_data['lastName'],
             "email": self.json_data['email']
         }
-        
-        if raw_session_credentials.get('user_type') not in user_types:
-            return {
-                'message': self.translate.t('your_user_type_does_not_meet_requirements'),
-                'field': 'request'
-            }, 400
-        else:
-            # Convert user_type from common nickname to discrete class name.
-            raw_session_credentials['user_type'] = user_types_generic[user_types.index(raw_session_credentials.get('user_type'))]
 
         email_valid, exception = self.check_email(
             email=raw_session_credentials["email"]
