@@ -10,3 +10,4 @@ __pycache__
 fluency-py-private-key.json
 http
 .nova
+node_modules
