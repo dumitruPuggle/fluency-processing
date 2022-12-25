@@ -1,0 +1,4 @@
+- command: show-commands
+  instruction: To display a list of all CLI commands
+- command: how are you baby?
+  instruction: Just an example

@@ -11,6 +11,7 @@ async function installDeps() {
     "npm i colors",
     "npm i inquirer",
     "npm i arg",
+    "npm i js-yaml",
   ];
   const { stdout, stderr } = await exec(installCommands.join(" && "));
   const installSuccess = stderr.length === 0;
@@ -24,27 +25,19 @@ import {
   printCLIInformation,
   printShortcutCommands,
   space,
+  repeater,
 } from "../cli-information.js";
 
 installDeps().then(({ installSuccess }) => {
   if (installSuccess) {
-    space();
-    space();
-    space();
-    space();
+    repeater(4, space);
     printCLIInformation();
     console.log(colors.green("Success! Installation complete."));
-    space();
-    space();
-    space();
+    repeater(3, space);
     printShortcutCommands([
       {
         instruction: "To see commands list",
         command: "yarn show-commands",
-      },
-      {
-        instruction: "To deploy the entire back-end:",
-        command: "yarn deploy",
       },
     ]);
     space();

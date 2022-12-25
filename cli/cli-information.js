@@ -4,6 +4,12 @@ const space = () => {
   console.log("");
 };
 
+const repeater = (iterations, func) => {
+  for (let i = 0; i < iterations; i++) {
+    func();
+  }
+};
+
 const printCLIInformation = () => {
   space();
   console.log(colors.bold("ℹ️ Fluency CLI Processing Api (v 1.0) #0001"));
@@ -16,14 +22,14 @@ const printCLIInformation = () => {
 };
 
 const printShortcutCommands = (shortcuts) => {
-  console.log(colors.bold("CLI commands used for backend"));
+  console.log(colors.bold("CLI commands used for backend:"));
   space();
   shortcuts.forEach((shortcut) => {
     console.log(
-      colors.italic.dim(shortcut.instruction),
+      `${colors.italic.dim(shortcut.instruction)}:`,
       colors.yellow(shortcut.command)
     );
   });
 };
 
-export { printCLIInformation, printShortcutCommands, space };
+export { printCLIInformation, printShortcutCommands, space, repeater };
