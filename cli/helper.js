@@ -1,6 +1,10 @@
-import { printShortcutCommands, repeater, space } from "./cli-information.js";
-import yaml from "js-yaml";
-import fs from "fs";
+const {
+  printShortcutCommands,
+  repeater,
+  space,
+} = require("./cli-information.js");
+const yaml = require("js-yaml");
+const fs = require("fs");
 
 // Get document, or throw exception on error
 try {

@@ -1,4 +1,4 @@
-import colors from "colors";
+const colors = require("colors");
 
 const space = () => {
   console.log("");
@@ -32,4 +32,9 @@ const printShortcutCommands = (shortcuts) => {
   });
 };
 
-export { printCLIInformation, printShortcutCommands, space, repeater };
+module.exports = {
+  printCLIInformation,
+  printShortcutCommands,
+  space,
+  repeater,
+};

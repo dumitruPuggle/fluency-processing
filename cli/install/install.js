@@ -1,5 +1,5 @@
-import util from "node:util";
-import ChildProcess from "node:child_process";
+const util = require("node:util");
+const ChildProcess = require("node:child_process");
 
 const exec = util.promisify(ChildProcess.exec);
 
@@ -20,13 +20,13 @@ async function installDeps() {
   };
 }
 
-import colors from "colors";
-import {
+const colors = require("colors");
+const {
   printCLIInformation,
   printShortcutCommands,
   space,
   repeater,
-} from "../cli-information.js";
+} = require("../cli-information.js");
 
 installDeps().then(({ installSuccess }) => {
   if (installSuccess) {
