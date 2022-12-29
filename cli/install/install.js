@@ -1,5 +1,5 @@
-import util from "node:util";
-import ChildProcess from "node:child_process";
+const util = require("node:util");
+const ChildProcess = require("node:child_process");
 
 const exec = util.promisify(ChildProcess.exec);
 
@@ -11,6 +11,7 @@ async function installDeps() {
     "npm i colors",
     "npm i inquirer",
     "npm i arg",
+    "npm i js-yaml",
   ];
   const { stdout, stderr } = await exec(installCommands.join(" && "));
   const installSuccess = stderr.length === 0;
@@ -19,32 +20,24 @@ async function installDeps() {
   };
 }
 
-import colors from "colors";
-import {
+const colors = require("colors");
+const {
   printCLIInformation,
   printShortcutCommands,
   space,
-} from "../cli-information.js";
+  repeater,
+} = require("../cli-information.js");
 
 installDeps().then(({ installSuccess }) => {
   if (installSuccess) {
-    space();
-    space();
-    space();
-    space();
+    repeater(4, space);
     printCLIInformation();
     console.log(colors.green("Success! Installation complete."));
-    space();
-    space();
-    space();
+    repeater(3, space);
     printShortcutCommands([
       {
         instruction: "To see commands list",
         command: "yarn show-commands",
-      },
-      {
-        instruction: "To deploy the entire back-end:",
-        command: "yarn deploy",
       },
     ]);
     space();
